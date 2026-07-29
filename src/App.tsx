@@ -67,19 +67,42 @@ export default function App() {
         }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Server endpoint unavailable (HTTP ${res.status})`);
+      }
+
       const data = await res.json();
       if (data.imageUrl) {
         setCurrentWallpaperUrl(data.imageUrl);
         setRawWallpaperUrl(data.imageUrl);
+      } else {
+        throw new Error('No imageUrl returned from server');
       }
     } catch (e) {
-      console.error('Failed to generate wallpaper:', e);
-      // High-resolution fallback direct URL if server fetch is interrupted
-      let fallbackModel = 'flux';
-      if (styleId === 'cartoon-anime') fallbackModel = 'flux-anime';
-      else if (styleId === 'reality-8k') fallbackModel = 'flux-realism';
+      console.warn('Backend API unavailable (likely static GitHub Pages host), using direct high-res client fallback:', e);
 
-      const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent('8k ultra realistic phone wallpaper ' + promptText)}?width=1080&height=1920&nologo=true&seed=${Date.now()}&enhance=true&model=${fallbackModel}`;
+      let fallbackModel = 'flux-realism';
+      let stylePromptModifier = 'real life photograph shot on 85mm DSLR camera f/1.4, hyper-realistic 8k resolution photo, natural cinematic lighting, sharp detail';
+      
+      if (styleId === 'cartoon-anime') {
+        fallbackModel = 'flux-anime';
+        stylePromptModifier = 'vivid cartoon anime illustration, Studio Ghibli style, hand-painted digital artwork, crisp lines, 8k wallpaper';
+      } else if (styleId === 'ai-art-3d') {
+        fallbackModel = 'flux-3d';
+        stylePromptModifier = 'hyperdetailed 3D AI artwork, translucent liquid glass ribbons, Octane Render 8k, raytraced reflection';
+      } else if (styleId === 'cyberpunk-neon') {
+        fallbackModel = 'flux';
+        stylePromptModifier = 'cyberpunk synthwave aesthetic, glowing neon lights, rain soaked dark street, 8k wallpaper';
+      } else if (styleId === 'deep-amoled-dark') {
+        fallbackModel = 'flux';
+        stylePromptModifier = 'deep dark OLED wallpaper, pitch black obsidian background (#000000) with electric luminous geometry, 8k';
+      }
+
+      const seed = Math.floor(Math.random() * 8999999) + 1000000;
+      const colorKeywords = colorObj?.keywords ? ` Color scheme: ${colorObj.keywords}.` : '';
+      const fullFallbackPrompt = `${promptText}. ${stylePromptModifier}.${colorKeywords} Masterpiece 8K mobile wallpaper.`;
+
+      const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullFallbackPrompt)}?width=1080&height=1920&nologo=true&seed=${seed}&enhance=true&model=${fallbackModel}`;
       setCurrentWallpaperUrl(fallbackUrl);
       setRawWallpaperUrl(fallbackUrl);
     } finally {
