@@ -1,0 +1,6 @@
+{
+  "name": "Aether Glass - AI Wallpaper Generator",
+  "description": "Generate customized high-resolution AI wallpapers for any phone dimensions (iPhone 10-17, Samsung Galaxy, Pixel, custom dimensions) with real-time glassmorphic phone previews and social sharing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
